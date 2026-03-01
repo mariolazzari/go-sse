@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SSE Stock Dashboard</title>
+    <style>
+      body {
+        font-family: monospace;
+        background: #111217;
+        color: #e5e7eb;
+        padding: 2rem;
+      }
+      h1 {
+        color: #3b82f6;
+      }
+      .connected {
+        color: #10b981;
+      }
+      .disconnected {
+        color: #ef4444;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        max-width: 600px;
+      }
+      th,
+      td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #1f2937;
+      }
+      th {
+        color: #6b7280;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
+      .price {
+        font-weight: bold;
+        color: #f59e0b;
+      }
+      .time {
+        color: #6b7280;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Real-Time Stock Dashboard</h1>
+    <div id="status" class="disconnected">Disconnected</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Price</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody id="prices"></tbody>
+    </table>
+    <div id="log"></div>
+
+    <script>
+      const source = new EventSource("/events");
+      const prices = {};
+
+      source.onopen = () => {
+        document.getElementById("status").textContent = "Connected";
+        document.getElementById("status").className = "connected";
+      };
+
+      source.addEventListener("stock-update", e => {
+        const data = JSON.parse(e.data);
+        prices[data.symbol] = data;
+        renderTable();
+        appendLog(`id:${e.lastEventId} ${data.symbol} $${data.price}`);
+      });
+
+      source.onerror = () => {
+        document.getElementById("status").textContent = "Reconnecting...";
+        document.getElementById("status").className = "disconnected";
+      };
+
+      function renderTable() {
+        const tbody = document.getElementById("prices");
+        tbody.innerHTML = Object.values(prices)
+          .sort((a, b) => a.symbol.localeCompare(b.symbol))
+          .map(
+            s => `<tr>
+                    <td>${s.symbol}</td>
+                    <td class="price">$${s.price.toFixed(2)}</td>
+                    <td class="time">${new Date(s.time).toLocaleTimeString()}</td>
+                </tr>`,
+          )
+          .join("");
+      }
+
+      function appendLog(msg) {
+        const log = document.getElementById("log");
+        log.innerHTML = `<div>${msg}</div>` + log.innerHTML;
+        if (log.children.length > 50) log.lastChild.remove();
+      }
+    </script>
+  </body>
+</html>

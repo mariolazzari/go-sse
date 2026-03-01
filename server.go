@@ -1,28 +1,3 @@
-# Server-Sent Events (SSE): Build a Real-Time Stock Dashboard in Go
-
-[YouTube](https://www.youtube.com/watch?v=_s9LkfybCFQ)
-[MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
-
-## Server sent events
-
-- Browser API
-- Server pushes data to client
-- Single connection
-- HTTP protocol
-- Auto reconnect
-- Event ID and resume
-- Plain text
-- Unidirectional server to client
-
-## Setup
-
-```sh
-go mod init github.com/mariolazzari/go-sse
-```
-
-## Server
-
-```go
 package main
 
 import (
@@ -152,4 +127,3 @@ func main() {
 	log.Println("Dashboard: http://localhost:8080/")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-```
